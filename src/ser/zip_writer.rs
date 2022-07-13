@@ -26,7 +26,7 @@ where
             self.0.add_directory(&parent, Default::default());
         }
 
-        let options = zip::write::FileOptions::default().compression_method(zip::CompressionMethod::Stored);
+        let options = zip::write::FileOptions::default().compression_method(zip::CompressionMethod::Zstd);
         self.0.start_file(&path.join("/"), options);
         self.0.write_all(data);
         Ok(())

@@ -97,6 +97,7 @@ ERHpT66G1wzSMm+ggi7yT4BJaz9slMLzZxyMKEPYNldJ1AJk
 -----END CERTIFICATE-----"
             .to_string(),
     };
+    
 
     let file = std::fs::File::create("/tmp/serde_zip-test.tar").unwrap();
     let writer = serde_archive::ser::tar_writer::TarWriter::new(file);
