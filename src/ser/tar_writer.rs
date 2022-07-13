@@ -3,11 +3,11 @@ use crate::error::{Error, Result};
 use std::io::{Seek, Write};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-pub struct TarWriter<W: Write + Seek>(tar::Builder<W>);
+pub struct TarWriter<W: Write>(tar::Builder<W>);
 
 impl<W> TarWriter<W>
 where
-    W: Write + Seek,
+    W: Write,
 {
     pub fn new(writer: W) -> Self {
         TarWriter(tar::Builder::new(writer))
@@ -16,7 +16,7 @@ where
 
 impl<W> ArchiveWriter for TarWriter<W>
 where
-    W: Write + Seek,
+    W: Write,
 {
     fn write(&mut self, path: &Vec<String>, data: &[u8]) -> super::Result<()> {
         let mut header = tar::Header::new_gnu();
