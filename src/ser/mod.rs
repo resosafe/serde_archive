@@ -2,10 +2,10 @@ use crate::error::{Error, Result};
 use serde::ser::{self, Impossible, Serialize};
 use std::fmt::Display;
 
-#[cfg(feature = "with-zip")]
+#[cfg(any(doc, feature = "with-zip"))]
 pub mod zip_writer;
 
-#[cfg(feature = "with-tar")]
+#[cfg(any(doc, feature = "with-tar"))]
 pub mod tar_writer;
 
 pub fn to_writer<W: ArchiveWriter, S: Serialize>(writer: W, value: &S) -> Result<()> {

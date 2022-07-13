@@ -9,6 +9,9 @@ repository = "https://github.com/resosafe/serde_archive"
 
 
 
+[package.metadata.docs.rs]
+all-features = true
+
 [features]
 with-zip = ["zip"]
 with-tar = ["tar"]
@@ -21,3 +24,4 @@ tar = {version = "0.4", optional = true}
 
 [dev-dependencies]
 serde_derive = "1.0"
+
