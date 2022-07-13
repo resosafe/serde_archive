@@ -15,7 +15,7 @@ struct SubItem {
     pub id: i32,
 }
 
-#[cfg(feature = "with-zip")]
+#[cfg(feature = "enable-zip")]
 #[test]
 fn serialize_struct_zip() {
 
@@ -60,7 +60,7 @@ ERHpT66G1wzSMm+ggi7yT4BJaz9slMLzZxyMKEPYNldJ1AJk
     assert_eq!(serde_archive::to_writer(writer, &item), Ok(()));
 }
 
-#[cfg(feature = "with-tar")]
+#[cfg(feature = "enable-tar")]
 #[test]
 fn serialize_struct_tar() {
 

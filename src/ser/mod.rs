@@ -182,7 +182,6 @@ where
     }
 
     fn serialize_struct(self, name: &'static str, len: usize) -> Result<Self::SerializeStruct> {
-        //write!(self.writer, "<{}>", name)?;
         self.start_entry(name);
         Ok(Struct::new(self, name))
     }

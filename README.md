@@ -13,7 +13,7 @@ Only simple Serialization at the moment: support for Structures, Map<String, T> 
 To use this library, add the following to your `Cargo.toml`:
 ```toml
 [dependencies]
-serde_archive = { version = "0.1", features = ["with-zip", "with-tar"], optional = true }
+serde_archive = { version = "0.1", features = ["enable-zip", "enable-tar"], optional = true }
 ```
 
 ```rust
