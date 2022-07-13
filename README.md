@@ -31,4 +31,4 @@ Only simple Serialization at the moment: support for Structures, Map<String, T> 
     let writer = serde_archive::ser::tar_writer::TarWriter::new(file);
     serde_archive::to_writer(writer, &item);
 
-```# serde_zip
+```#
