@@ -19,6 +19,7 @@ struct SubItem {
 #[test]
 fn serialize_struct_zip() {
 
+    use serde_archive::ser::zip_writer;
     let item = Item {
         name: String::from("test"),
         sub: SubItem { id: 12 },
@@ -55,7 +56,7 @@ ERHpT66G1wzSMm+ggi7yT4BJaz9slMLzZxyMKEPYNldJ1AJk
     };
 
     let file = std::fs::File::create("/tmp/serde_zip-test.zip").unwrap();
-    let writer = serde_archive::ser::zip_writer::ZipWriter::new(file);
+    let writer = zip_writer::ZipWriter::new(file, zip_writer::ZipCompression::Bzip2);
     assert_eq!(serde_archive::to_writer(writer, &item), Ok(()));
 }
 
