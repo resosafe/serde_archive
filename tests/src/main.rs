@@ -1,7 +1,6 @@
-#[macro_use]
-extern crate serde_derive;
-extern crate serde;
-extern crate serde_archive;
+
+use serde::Serialize;
+use serde_archive::ser::{zip_writer, tar_writer};
 
 #[derive(Debug, Serialize)]
 struct Item {
@@ -15,11 +14,9 @@ struct SubItem {
     pub id: i32,
 }
 
-#[cfg(feature = "enable-zip")]
-#[test]
+
 fn serialize_struct_zip() {
 
-    use serde_archive::ser::zip_writer;
     let item = Item {
         name: String::from("test"),
         sub: SubItem { id: 12 },
@@ -55,13 +52,13 @@ ERHpT66G1wzSMm+ggi7yT4BJaz9slMLzZxyMKEPYNldJ1AJk
             .to_string(),
     };
 
-    let file = std::fs::File::create("/tmp/serde_zip-test.zip").unwrap();
+    let file = tempfile::Builder::new().suffix(".zip").tempfile().unwrap();
+    println!("Writing to : {:?}", file.path());
     let writer = zip_writer::ZipWriter::new(file, zip_writer::ZipCompression::Bzip2);
     assert_eq!(serde_archive::to_writer(writer, &item), Ok(()));
 }
 
-#[cfg(feature = "enable-tar")]
-#[test]
+
 fn serialize_struct_tar() {
 
     let item = Item {
@@ -100,7 +97,13 @@ ERHpT66G1wzSMm+ggi7yT4BJaz9slMLzZxyMKEPYNldJ1AJk
     };
     
 
-    let file = std::fs::File::create("/tmp/serde_zip-test.tar").unwrap();
+    let file = tempfile::Builder::new().suffix(".tar").tempfile().unwrap();
     let writer = serde_archive::ser::tar_writer::TarWriter::new(file);
     assert_eq!(serde_archive::to_writer(writer, &item), Ok(()));
+}
+
+
+fn main() {
+    serialize_struct_zip();
+    serialize_struct_tar();
 }

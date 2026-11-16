@@ -1,6 +1,6 @@
 [package]
 name = "serde_archive"
-version = "0.1.5"
+version = "0.1.6"
 authors = ["Jean Collonvillé <jcollonville@resosafe.fr>"]
 edition = "2018"
 description = "archive serializer for Serde"
@@ -13,6 +13,7 @@ repository = "https://github.com/resosafe/serde_archive"
 all-features = true
 
 [features]
+all = ["with-zip", "with-tar"]
 with-zip = ["zip"]
 with-tar = ["tar"]
 

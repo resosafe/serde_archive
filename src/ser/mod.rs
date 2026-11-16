@@ -181,9 +181,9 @@ where
         Ok(Map::new(self))
     }
 
-    fn serialize_struct(self, name: &'static str, len: usize) -> Result<Self::SerializeStruct> {
-        self.start_entry(name);
-        Ok(Struct::new(self, name))
+    fn serialize_struct(self, _name: &'static str, _len: usize) -> Result<Self::SerializeStruct> {
+        // Field names alone form archive paths (e.g. `sub/id`), not Rust type names.
+        Ok(Struct::new(self))
     }
 
     fn serialize_struct_variant(self, name: &'static str, variant_index: u32, variant: &'static str, len: usize) -> Result<Self::SerializeStructVariant> {
@@ -392,15 +392,14 @@ where
     W: 'w + ArchiveWriter,
 {
     parent: &'w mut Serializer<W>,
-    name: &'w str,
 }
 
 impl<'w, W> Struct<'w, W>
 where
     W: 'w + ArchiveWriter,
 {
-    pub fn new(parent: &'w mut Serializer<W>, name: &'w str) -> Struct<'w, W> {
-        Struct { parent, name }
+    pub fn new(parent: &'w mut Serializer<W>) -> Struct<'w, W> {
+        Struct { parent }
     }
 }
 
@@ -420,7 +419,6 @@ where
     }
 
     fn end(self) -> Result<Self::Ok> {
-        self.parent.end_entry();
         Ok(())
     }
 }
