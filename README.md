@@ -1,38 +1,65 @@
-
 # serde_archive
 
-Archive serializer for Serde
+Archive serializer/deserializer for Serde.
 
 ## Status
 
-Supports tar and zip formats.
-Only simple Serialization at the moment: support for Structures, Map<String, T> and primitive types.
+Supports **tar** and **zip**.
+
+Each leaf value is stored as a file. Nested fields become path segments using
+**field names only** (not Rust type names), e.g. `sub/id`.
+
+Supported shapes: structs, maps with string-like keys, sequences/tuples
+(indexed as `0`, `1`, …), options (`None` omits the entry), newtypes, and
+common enums.
 
 ## Usage
 
-To use this library, add the following to your `Cargo.toml`:
 ```toml
 [dependencies]
-serde_archive = { version = "0.1", features = ["enable-zip", "enable-tar"], optional = true }
+serde_archive = { version = "0.1", features = ["with-zip", "with-tar"] }
+# or: features = ["all"]
 ```
 
 ```rust
-use serde_archive::ser::zip_writer;
-use serde_archive::ser::tar_writer;
+use serde::{Deserialize, Serialize};
+use serde_archive::ser::zip_writer::{ZipCompression, ZipWriter};
+use serde_archive::ser::tar_writer::TarWriter;
+
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
+struct Item {
+    name: String,
+    sub: SubItem,
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
+struct SubItem {
+    id: i32,
+}
 
 let item = Item {
     name: String::from("test"),
-    sub: SubItem {
-        id: 12
-    }
+    sub: SubItem { id: 12 },
 };
 
-let mut file = std::fs::File::create("/tmp/serde_zip-test.zip").unwrap();
-let writer = zip_writer::ZipWriter::new(file, zip_writer::ZipCompression::Bzip2);
-serde_archive::to_writer(writer, &item);
+// Zip
+let mut buf = std::io::Cursor::new(Vec::new());
+let writer = ZipWriter::new(&mut buf, ZipCompression::Deflated);
+serde_archive::to_writer(writer, &item)?;
+buf.set_position(0);
+let decoded: Item = serde_archive::from_zip(buf)?;
 
+// Tar
+let mut buf = std::io::Cursor::new(Vec::new());
+let writer = TarWriter::new(&mut buf);
+serde_archive::to_writer(writer, &item)?;
+buf.set_position(0);
+let decoded: Item = serde_archive::from_tar(buf)?;
+```
 
-let mut file = std::fs::File::create("/tmp/serde_tar-test.tar").unwrap();
-let writer = tar_writer::TarWriter::new(file);
-serde_archive::to_writer(writer, &item);
+Archive layout for the example above:
+
+```
+name
+sub/id
 ```

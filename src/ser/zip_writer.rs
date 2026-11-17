@@ -1,17 +1,15 @@
 use super::ArchiveWriter;
-use crate::error::{Error, Result};
+use crate::error::Result;
+use crate::path::join_path;
+use std::collections::HashSet;
 use std::io::{Seek, Write};
-
-
 
 pub enum ZipCompression {
     None,
     Deflated,
     Zstd,
-    Aes,
-    Bzip2
+    Bzip2,
 }
-
 
 impl From<ZipCompression> for zip::CompressionMethod {
     fn from(compression: ZipCompression) -> Self {
@@ -19,14 +17,16 @@ impl From<ZipCompression> for zip::CompressionMethod {
             ZipCompression::None => zip::CompressionMethod::Stored,
             ZipCompression::Deflated => zip::CompressionMethod::Deflated,
             ZipCompression::Zstd => zip::CompressionMethod::Zstd,
-            ZipCompression::Aes => zip::CompressionMethod::Aes,
             ZipCompression::Bzip2 => zip::CompressionMethod::Bzip2,
         }
     }
 }
+
 pub struct ZipWriter<W: Write + Seek> {
-    writer :zip::ZipWriter<W>,
+    writer: zip::ZipWriter<W>,
     compression: zip::CompressionMethod,
+    directories: HashSet<String>,
+    finished: bool,
 }
 
 impl<W> ZipWriter<W>
@@ -35,8 +35,10 @@ where
 {
     pub fn new(writer: W, compression: ZipCompression) -> Self {
         ZipWriter {
-            writer : zip::ZipWriter::new(writer),
+            writer: zip::ZipWriter::new(writer),
             compression: compression.into(),
+            directories: HashSet::new(),
+            finished: false,
         }
     }
 }
@@ -45,22 +47,38 @@ impl<W> ArchiveWriter for ZipWriter<W>
 where
     W: Write + Seek,
 {
-    fn write(&mut self, path: &Vec<String>, data: &[u8]) -> super::Result<()> {
-        let mut parent = path.clone();
-        parent.pop();
-        if parent.len() > 0 {
-            let mut parent = parent.join("/");
-            parent.push('/');
-            self.writer.add_directory(&parent, Default::default());
+    fn write(&mut self, path: &[String], data: &[u8]) -> Result<()> {
+        if path.len() > 1 {
+            let parent = format!("{}/", join_path(&path[..path.len() - 1]));
+            if self.directories.insert(parent.clone()) {
+                self.writer
+                    .add_directory(&parent, Default::default())
+                    .map_err(crate::error::Error::from)?;
+            }
         }
 
         let options = zip::write::FileOptions::default().compression_method(self.compression);
-        self.writer.start_file(&path.join("/"), options);
-        self.writer.write_all(data);
+        self.writer
+            .start_file(join_path(path), options)
+            .map_err(crate::error::Error::from)?;
+        self.writer.write_all(data)?;
         Ok(())
     }
 
-    fn finish(&mut self) -> super::Result<()> {
-        self.writer.finish().map_or_else(|e| Err(super::Error::Message(e.to_string())), |_| Ok(()))
+    fn finish(&mut self) -> Result<()> {
+        if self.finished {
+            return Ok(());
+        }
+        self.finished = true;
+        self.writer
+            .finish()
+            .map(|_| ())
+            .map_err(crate::error::Error::from)
+    }
+}
+
+impl<W: Write + Seek> Drop for ZipWriter<W> {
+    fn drop(&mut self) {
+        let _ = self.finish();
     }
 }

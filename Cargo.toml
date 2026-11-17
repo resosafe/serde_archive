@@ -1,27 +1,29 @@
 [package]
 name = "serde_archive"
-version = "0.1.6"
+version = "0.2.0"
 authors = ["Jean Collonvillé <jcollonville@resosafe.fr>"]
-edition = "2018"
+edition = "2021"
 description = "archive serializer for Serde"
 license = "MIT"
 repository = "https://github.com/resosafe/serde_archive"
-
-
+readme = "README.md"
 
 [package.metadata.docs.rs]
 all-features = true
 
 [features]
+default = []
 all = ["with-zip", "with-tar"]
-with-zip = ["zip"]
-with-tar = ["tar"]
+with-zip = ["dep:zip"]
+with-tar = ["dep:tar"]
 
 [dependencies]
 serde = "1.0"
-zip = {version = "0.6.2", optional = true}
-tar = {version = "0.4", optional = true}
+zip = { version = "0.6.2", optional = true }
+tar = { version = "0.4", default-features = false, optional = true }
 
 [dev-dependencies]
-serde_derive = "1.0"
-
+serde = { version = "1.0", features = ["derive"] }
+tempfile = "3.5"
+zip = "0.6.2"
+tar = { version = "0.4", default-features = false }
